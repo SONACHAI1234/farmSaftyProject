@@ -26,10 +26,10 @@ def doRead(ser, lock):
             pass
         else:
             while rcv != '':
-                if(rcv.find('***KISHANSTEEL***ON***KISHANSTEEL***') != -1):
+                if(rcv.find('***FARM***BIRD***FARM***') != -1):
                     print("BATHI ON")
                     GPIO.output(channel, GPIO.HIGH)
-                elif (rcv.find('***KISHANSTEEL***OFF***KISHANSTEEL***') != -1):
+                elif (rcv.find('***FARM***OFF***FARM***') != -1):
                     GPIO.output(channel, GPIO.LOW)
                     print("BATHI OFF")
                 else:

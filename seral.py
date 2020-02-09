@@ -1,12 +1,31 @@
 import serial
 import time
+import os
 import RPi.GPIO as GPIO
 from threading import Thread, Lock
 from curses import ascii
+import subprocess
+import pygame
+
+def playFile1(file):
+    global player
+    player = subprocess.Popen(["omxplayer", file, "-ss", "30"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+def exitPlayer1():
+    global player
+    player.stdin.write("q")
+
+def playFile(file):
+    pygame.mixer.init()
+    pygame.mixer.music.load(file)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy() == True:
+        continue
+
 
 # Enable Serial Communication
 ser = serial.Serial()
-ser.port = "/dev/ttyUSB0"
+ser.port = "/dev/ttyUSB1"
 ser.baudrate = 9600
 ser.timeout = 1
 channel = 26
@@ -16,6 +35,7 @@ GPIO.setmode(GPIO.BCM)
 print ("### setGPIO as OUT done ###")
 GPIO.setup(channel, GPIO.OUT)
 def doRead(ser, lock):
+    global pid
     while True:
 
         lock.acquire()
@@ -26,11 +46,15 @@ def doRead(ser, lock):
             pass
         else:
             while rcv != '':
-                if(rcv.find('***FARM***BIRD***FARM***') != -1):
+                if(rcv.find('***KISHANSTEEL***ON***KISHANSTEEL***') != -1):
                     print("BATHI ON")
-                    GPIO.output(channel, GPIO.HIGH)
-                elif (rcv.find('***FARM***OFF***FARM***') != -1):
-                    GPIO.output(channel, GPIO.LOW)
+                    pid = os.fork()
+                    if (pid == 0) :
+                        playFile1("file_example_MP3_700KB.mp3")
+                    #GPIO.output(channel, GPIO.HIGH)
+                elif (rcv.find('***KISHANSTEEL***OFF***KISHANSTEEL***') != -1):
+                    #GPIO.output(channel, GPIO.LOW)
+                    os.kill(pid,9)
                     print("BATHI OFF")
                 else:
                     print(rcv)
